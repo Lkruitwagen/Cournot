@@ -4,6 +4,7 @@ from math import *
 import sys
 import csv
 import numpy as np
+import json
 #matplotlib inline
 
 #vectorised 2P-3T cournot now using basinhopping
@@ -465,7 +466,7 @@ def reaction(x_allmn,cn,b,n,n_cos,n_years, ini_assets):
     #then try a different minimizer
     #xn = optimize.basinhopping(objective, x0, stepsize =0.1, minimizer_kwargs=minimizer_kwargs, disp=True, callback=call) #, niter=200)
     #print xn
-    raw_input('paused-->')
+    print 'Next co.'
     #xn = optimize.minimize(objective, x0, args = (x_allmn,n,cn,b,ini_assets), constraints = cons, bounds = bnds) #, niter=200)
 
     #print 'rxn xn:', xn
@@ -547,9 +548,8 @@ def main():
     param = {'consts': consts, 'n_cos': n_companies, 'n_years':n_years, 'ini_assets': ini_assets}
     #x0 = np.array([[0.3, 0.3,0.3],[0.3,0.3,0.3]])
     #i.e. x_arr - f(x_arr) = 0
+
     ans, resid, reso = vector_reaction(state_0, param)
-    #print 'ans', ans
-    print 'resid', resid
     print ans.reshape(n_companies,n_years,5)
     
 
@@ -561,9 +561,22 @@ def main():
         print 'resid', resid
         state = ans.reshape(n_companies,n_years,5)
         assets, meta = state2assets(state,1,1,ini_assets,100.0)
+
+        print 'state', state
+        print 'writing files...'
+        state_str = 'run\\state_'+str(ITER)+'.csv'
+        assets_str = 'run\\assets_'+str(ITER)+'.csv'
+
+        np.savetxt(state_str,state.reshape(n_companies*n_years,5),delimiter=',')
+        np.savetxt(assets_str,assets.reshape(n_companies*n_years,7),delimiter=',')
+
+        print 'redis', resid
         print_assets(assets,state, reso)
         print 'prices: ', [el['P'] for el in meta]
         print 'sum_div: ', sum(np.array([el['div'] for el in meta]))
+        meta.append({'resid':resid})
+        meta_str = 'run\\meta_'+str(ITER)+'.json'
+        json.dump(meta,open(meta_str,'w'))
         #for el in meta:
         #    print [round(sum(each)) for each in el['prod']]
         #prof = [0 for k in range(n_companies)]
