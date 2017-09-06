@@ -4,7 +4,6 @@ from math import *
 import sys
 import csv
 import numpy as np
-import matplotlib.pyplot as plt
 #matplotlib inline
 
 #vectorised 2P-3T cournot now using basinhopping
